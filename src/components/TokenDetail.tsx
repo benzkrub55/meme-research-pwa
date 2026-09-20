@@ -10,6 +10,7 @@ import {
   formatPercent,
   formatPrice,
   formatRatio,
+  fomoTokenUrl,
   gmgnTokenUrl,
   percentTone,
   shortAddress,
@@ -191,6 +192,16 @@ export function TokenDetail({
             >
               เปิดบน gmgn.ai ↗
             </a>
+            {fomoTokenUrl(token.chain || chain, address) && (
+              <a
+                href={fomoTokenUrl(token.chain || chain, address)!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg bg-fuchsia-600/90 px-3 py-1.5 text-xs font-semibold text-white"
+              >
+                เปิดใน FOMO ↗
+              </a>
+            )}
           </div>
           <p className="mt-1 text-[10px] text-zinc-600">{shortAddress(address, 6)}</p>
         </div>

@@ -46,6 +46,23 @@ export function gmgnTokenUrl(chain: string, address: string): string {
   return `https://gmgn.ai/${chain}/token/${address}`;
 }
 
+/** FOMO app deep link: https://fomo.family/tokens/{slug}/{address} */
+export function fomoTokenUrl(chain: string, address: string): string | null {
+  const slug: Record<string, string> = {
+    sol: "solana",
+    solana: "solana",
+    bsc: "bnb",
+    bnb: "bnb",
+    base: "base",
+    eth: "ethereum",
+    ethereum: "ethereum",
+    monad: "monad",
+  };
+  const path = slug[chain.toLowerCase()];
+  if (!path || !address) return null;
+  return `https://fomo.family/tokens/${path}/${address}`;
+}
+
 export function percentTone(value?: number | null): string {
   if (value == null || Number.isNaN(value) || value === 0) return "text-zinc-400";
   return value > 0 ? "text-emerald-400" : "text-rose-400";

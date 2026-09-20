@@ -47,11 +47,11 @@ export interface HotSearchesGroup {
 }
 
 export const CHAINS: { id: ChainId; label: string }[] = [
+  { id: "all", label: "ทั้งหมด" },
   { id: "sol", label: "SOL" },
   { id: "bsc", label: "BSC" },
   { id: "base", label: "Base" },
   { id: "eth", label: "ETH" },
-  { id: "all", label: "ทั้งหมด" },
 ];
 
 export const INTERVALS: { id: IntervalId; label: string }[] = [
@@ -62,6 +62,6 @@ export const INTERVALS: { id: IntervalId; label: string }[] = [
   { id: "24h", label: "24ชม" },
 ];
 
-export const DEFAULT_CHAIN: ChainId = "sol";
+export const DEFAULT_CHAIN: ChainId = "all";
 export const DEFAULT_INTERVAL: IntervalId = "1h";
 export const DEFAULT_LIMIT = 50;

@@ -14,17 +14,85 @@ import {
 } from "@/lib/types";
 
 const AUTO_MS = 60_000;
+const FILTERS_KEY = "meme-research-filters";
+
+function isChainId(v: unknown): v is ChainId {
+  return v === "all" || v === "sol" || v === "bsc" || v === "base" || v === "eth";
+}
+
+function isIntervalId(v: unknown): v is IntervalId {
+  return v === "1m" || v === "5m" || v === "1h" || v === "6h" || v === "24h";
+}
+
+function readStoredFilters(): { chain: ChainId; interval: IntervalId } {
+  let chain: ChainId = DEFAULT_CHAIN;
+  let interval: IntervalId = DEFAULT_INTERVAL;
+  try {
+    const raw = localStorage.getItem(FILTERS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { chain?: unknown; interval?: unknown };
+      if (isChainId(parsed.chain)) chain = parsed.chain;
+      if (isIntervalId(parsed.interval)) interval = parsed.interval;
+    }
+  } catch {
+    // ignore
+  }
+  try {
+    const sp = new URLSearchParams(window.location.search);
+    const qChain = sp.get("chain");
+    const qInterval = sp.get("interval");
+    if (isChainId(qChain)) chain = qChain;
+    if (isIntervalId(qInterval)) interval = qInterval;
+  } catch {
+    // ignore
+  }
+  return { chain, interval };
+}
 
 export function HotFeed() {
   const [chain, setChain] = useState<ChainId>(DEFAULT_CHAIN);
   const [interval, setIntervalId] = useState<IntervalId>(DEFAULT_INTERVAL);
+  const [hydrated, setHydrated] = useState(false);
   const [tokens, setTokens] = useState<HotToken[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fetchedAt, setFetchedAt] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const chainRef = useRef(chain);
+  const intervalRef = useRef(interval);
+  chainRef.current = chain;
+  intervalRef.current = interval;
+
+  useEffect(() => {
+    const stored = readStoredFilters();
+    setChain(stored.chain);
+    setIntervalId(stored.interval);
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(
+        FILTERS_KEY,
+        JSON.stringify({ chain, interval })
+      );
+    } catch {
+      // ignore
+    }
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("chain", chain);
+      url.searchParams.set("interval", interval);
+      window.history.replaceState(null, "", url.pathname + url.search);
+    } catch {
+      // ignore
+    }
+  }, [chain, interval, hydrated]);
 
   const load = useCallback(async () => {
+    const activeChain = chainRef.current;
+    const activeInterval = intervalRef.current;
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
@@ -32,8 +100,8 @@ export function HotFeed() {
     setError(null);
     try {
       const qs = new URLSearchParams({
-        chain,
-        interval,
+        chain: activeChain,
+        interval: activeInterval,
         limit: "50",
       });
       const res = await fetch(`/api/hot-searches?${qs}`, {
@@ -50,16 +118,17 @@ export function HotFeed() {
     } finally {
       setLoading(false);
     }
-  }, [chain, interval]);
+  }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     void load();
     const id = window.setInterval(() => void load(), AUTO_MS);
     return () => {
       window.clearInterval(id);
       abortRef.current?.abort();
     };
-  }, [load]);
+  }, [hydrated, chain, interval, load]);
 
   const fetchedLabel = fetchedAt
     ? new Date(fetchedAt).toLocaleTimeString("th-TH", {
