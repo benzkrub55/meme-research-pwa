@@ -57,7 +57,8 @@ export function fomoTokenUrl(chain: string, address: string): string | null {
     eth: "ethereum",
     ethereum: "ethereum",
     monad: "monad",
-    // robinhood / arc: FOMO may not support yet — omit link
+    robinhood: "robinhood",
+    arc: "arc",
   };
   const path = slug[chain.toLowerCase()];
   if (!path || !address) return null;
