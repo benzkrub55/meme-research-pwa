@@ -49,9 +49,44 @@ export function TokenDetail({
   const [note, setNote] = useState("");
   const [copied, setCopied] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [loreLoading, setLoreLoading] = useState(true);
+  const [loreError, setLoreError] = useState<string | null>(null);
+  const [loreSummary, setLoreSummary] = useState<string | null>(null);
+  const [loreItems, setLoreItems] = useState<
+    { title: string; snippet: string; url: string; source: string; isX: boolean }[]
+  >([]);
 
   useEffect(() => {
     setNote(loadNote(address));
+  }, [address]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoreLoading(true);
+      setLoreError(null);
+      try {
+        const qs = new URLSearchParams({ address });
+        const res = await fetch(`/api/lore?${qs}`, { cache: "no-store" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "โหลด lore ไม่สำเร็จ");
+        if (!cancelled) {
+          setLoreSummary(data.summary || null);
+          setLoreItems(Array.isArray(data.items) ? data.items : []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLoreError(err instanceof Error ? err.message : "โหลด lore ไม่สำเร็จ");
+          setLoreItems([]);
+          setLoreSummary(null);
+        }
+      } finally {
+        if (!cancelled) setLoreLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [address]);
 
   useEffect(() => {
@@ -273,23 +308,76 @@ export function TokenDetail({
 
 
         <div className="rounded-xl bg-zinc-900/80 p-3 ring-1 ring-zinc-800">
-          <div className="text-[10px] uppercase tracking-wide text-zinc-500">
-            Lore
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[10px] uppercase tracking-wide text-zinc-500">
+              Lore
+            </div>
+            <a
+              href={xCaSearchUrl(address)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] font-semibold text-sky-400"
+            >
+              เปิดฟีด X เต็ม ↗
+            </a>
           </div>
           <p className="mt-1 text-xs text-zinc-400">
-            เปิด X ค้นหาด้วย CA ของเหรียญ เพื่อเลื่อนดูเรื่องราว / การพูดถึง
+            สรุปจากการค้นหา CA บนเว็บ (รวมโพสต์ X ที่ถูกอ้างถึง) — โชว์ในหน้านี้เลย
           </p>
-          <a
-            href={xCaSearchUrl(address)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2.5 text-sm font-semibold text-white"
-          >
-            เปิด Lore บน X ↗
-          </a>
-          <p className="mt-2 break-all font-mono text-[10px] text-zinc-600">
-            search: {address}
-          </p>
+          {loreLoading && (
+            <div className="mt-3 space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-16 animate-pulse rounded-lg bg-zinc-800/80" />
+              ))}
+            </div>
+          )}
+          {!loreLoading && loreError && (
+            <p className="mt-3 text-xs text-rose-300">{loreError}</p>
+          )}
+          {!loreLoading && loreSummary && (
+            <p className="mt-3 rounded-lg bg-zinc-950/80 px-3 py-2 text-xs leading-relaxed text-zinc-200 ring-1 ring-zinc-800">
+              {loreSummary}
+            </p>
+          )}
+          {!loreLoading && loreItems.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {loreItems.map((item) => (
+                <li key={item.url}>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-lg bg-zinc-950/70 px-3 py-2 ring-1 ring-zinc-800 transition hover:ring-sky-700/60"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                          item.isX
+                            ? "bg-sky-600/30 text-sky-300"
+                            : "bg-zinc-800 text-zinc-400"
+                        }`}
+                      >
+                        {item.isX ? "X" : item.source}
+                      </span>
+                      <span className="truncate text-xs font-semibold text-zinc-100">
+                        {item.title}
+                      </span>
+                    </div>
+                    {item.snippet && (
+                      <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-zinc-400">
+                        {item.snippet}
+                      </p>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {!loreLoading && !loreError && loreItems.length === 0 && (
+            <p className="mt-3 text-xs text-zinc-500">
+              ยังไม่เจอ lore จาก CA นี้ — กดเปิดฟีด X เต็มเพื่อเลื่อนดูเอง
+            </p>
+          )}
         </div>
 
         <div className="rounded-xl bg-zinc-900/80 p-3 ring-1 ring-zinc-800">
