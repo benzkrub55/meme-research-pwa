@@ -65,6 +65,12 @@ export function fomoTokenUrl(chain: string, address: string): string | null {
   return `https://fomo.family/tokens/${path}/${address}`;
 }
 
+/** X/Twitter search for token CA — Latest tab for scrolling lore */
+export function xCaSearchUrl(address: string): string {
+  const q = encodeURIComponent(address);
+  return `https://x.com/search?q=${q}&src=typed_query&f=live`;
+}
+
 export function percentTone(value?: number | null): string {
   if (value == null || Number.isNaN(value) || value === 0) return "text-zinc-400";
   return value > 0 ? "text-emerald-400" : "text-rose-400";

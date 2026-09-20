@@ -14,6 +14,7 @@ import {
   gmgnTokenUrl,
   percentTone,
   shortAddress,
+  xCaSearchUrl,
 } from "@/lib/format";
 
 function Stat({
@@ -269,6 +270,27 @@ export function TokenDetail({
             </ul>
           </div>
         )}
+
+
+        <div className="rounded-xl bg-zinc-900/80 p-3 ring-1 ring-zinc-800">
+          <div className="text-[10px] uppercase tracking-wide text-zinc-500">
+            Lore
+          </div>
+          <p className="mt-1 text-xs text-zinc-400">
+            เปิด X ค้นหาด้วย CA ของเหรียญ เพื่อเลื่อนดูเรื่องราว / การพูดถึง
+          </p>
+          <a
+            href={xCaSearchUrl(address)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2.5 text-sm font-semibold text-white"
+          >
+            เปิด Lore บน X ↗
+          </a>
+          <p className="mt-2 break-all font-mono text-[10px] text-zinc-600">
+            search: {address}
+          </p>
+        </div>
 
         <div className="rounded-xl bg-zinc-900/80 p-3 ring-1 ring-zinc-800">
           <div className="mb-2 flex items-center justify-between">
