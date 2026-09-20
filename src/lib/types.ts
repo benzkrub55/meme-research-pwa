@@ -1,4 +1,4 @@
-export type ChainId = "sol" | "bsc" | "base" | "eth" | "all";
+export type ChainId = "sol" | "bsc" | "base" | "eth" | "robinhood" | "arc" | "all";
 export type IntervalId = "1m" | "5m" | "1h" | "6h" | "24h";
 
 export interface HotToken {
@@ -52,6 +52,8 @@ export const CHAINS: { id: ChainId; label: string }[] = [
   { id: "bsc", label: "BSC" },
   { id: "base", label: "Base" },
   { id: "eth", label: "ETH" },
+  { id: "robinhood", label: "Robinhood" },
+  { id: "arc", label: "Arc" },
 ];
 
 export const INTERVALS: { id: IntervalId; label: string }[] = [

@@ -3,7 +3,7 @@ import { fetchHotSearches } from "@/lib/gmgn";
 import type { ChainId, IntervalId } from "@/lib/types";
 import { DEFAULT_CHAIN, DEFAULT_INTERVAL, DEFAULT_LIMIT } from "@/lib/types";
 
-const CHAINS = new Set(["sol", "bsc", "base", "eth", "all"]);
+const CHAINS = new Set(["sol", "bsc", "base", "eth", "robinhood", "arc", "all"]);
 const INTERVALS = new Set(["1m", "5m", "1h", "6h", "24h"]);
 
 export const runtime = "nodejs";

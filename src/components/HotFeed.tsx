@@ -17,7 +17,15 @@ const AUTO_MS = 60_000;
 const FILTERS_KEY = "meme-research-filters";
 
 function isChainId(v: unknown): v is ChainId {
-  return v === "all" || v === "sol" || v === "bsc" || v === "base" || v === "eth";
+  return (
+    v === "all" ||
+    v === "sol" ||
+    v === "bsc" ||
+    v === "base" ||
+    v === "eth" ||
+    v === "robinhood" ||
+    v === "arc"
+  );
 }
 
 function isIntervalId(v: unknown): v is IntervalId {

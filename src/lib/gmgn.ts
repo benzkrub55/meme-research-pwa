@@ -5,7 +5,7 @@ import { cached } from "./cache";
 
 const HOST = "https://openapi.gmgn.ai";
 const DEMO_KEY = "gmgn_solbscbaseethmonadtron";
-const ALL_CHAINS = ["sol", "bsc", "base", "eth"] as const;
+const ALL_CHAINS = ["sol", "bsc", "base", "eth", "robinhood", "arc"] as const;
 
 function getApiKey(): string {
   return process.env.GMGN_API_KEY?.trim() || DEMO_KEY;
@@ -134,15 +134,18 @@ async function fetchHotSearchesUncached(
     }
   }
 
-  // Prefer API rank; fall back to visiting_count desc
+  // Global hot-search heat: visiting_count high → low (not per-chain rank interleaved)
   tokens.sort((a, b) => {
+    const va = a.visiting_count ?? 0;
+    const vb = b.visiting_count ?? 0;
+    if (vb !== va) return vb - va;
     const ra = a.rank ?? Number.POSITIVE_INFINITY;
     const rb = b.rank ?? Number.POSITIVE_INFINITY;
     if (ra !== rb) return ra - rb;
-    return (b.visiting_count ?? 0) - (a.visiting_count ?? 0);
+    return (b.volume ?? 0) - (a.volume ?? 0);
   });
 
-  const sliced = tokens.slice(0, limit);
+  const sliced = tokens.slice(0, limit).map((t, i) => ({ ...t, rank: i + 1 }));
 
   return {
     tokens: sliced,
@@ -156,7 +159,7 @@ export async function fetchTokenFromHotCache(options: {
   address: string;
   interval?: IntervalId;
 }): Promise<HotToken | null> {
-  const chain = (["sol", "bsc", "base", "eth"].includes(options.chain)
+  const chain = (["sol", "bsc", "base", "eth", "robinhood", "arc"].includes(options.chain)
     ? options.chain
     : "sol") as ChainId;
   const { tokens } = await fetchHotSearches({
